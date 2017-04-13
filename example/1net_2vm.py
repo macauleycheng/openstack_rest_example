@@ -2,6 +2,10 @@ import sys
 import os
 import simplejson as json
 
+#This file will search all tenant and create one network and one vm on it
+#the image UUId shall be prepared manually.
+
+
 sys.path.append(os.path.abspath('../'))
 from lib import wrap
 
@@ -61,7 +65,6 @@ if __name__ == '__main__':
   #crecord all tenant_id
   all_tenants=reply_content['tenants']
   #print all_tenants
-  #os._exit(1)
   print "Total Tenants "+ str(len(all_tenants))
 
   for i in range(len(all_tenants)):
