@@ -9,11 +9,13 @@ import simplejson as json
 sys.path.append(os.path.abspath('../'))
 from lib import wrap
 
+#user shall change this according to his openstack
+image_ref = 'bb9429e5-448b-478a-bf7d-b577bf2b195b'
+
 def patch_work(token, tenant_id):
   print "create network"
   reply = conn.createNetwork(token, tenant_id, name = 'test')
-  if reply.status_code !=201:
-    print "exit, status code " + str(reply.status_code)
+  if reply.status_code !=201:    
     os._exit(1)
 
   reply_content = json.loads(reply.content)
@@ -29,19 +31,38 @@ def patch_work(token, tenant_id):
   subnet_uuid = reply_content['subnet']['id']
   print "subnet UUID "+subnet_uuid
 
-  print "create VM"
+  print "create VM1"
   reply = conn.createServer(token = token,
                             project_uuid=tenant_id,
-                            image_ref='bb9429e5-448b-478a-bf7d-b577bf2b195b',
+                            name = 'vm1',
+                            image_ref=image_ref,
                             network=network_uuid)
-  print reply.status_code
+
   if reply.status_code != 202:
-    print reply.content
     os._exit(1)
 
   reply_content = json.loads(reply.content)
   vm_uuid = reply_content['server']['id']
   print "vm UUID " + vm_uuid
+
+
+
+  print "create VM2"
+  reply = conn.createServer(token = token,
+                            project_uuid=tenant_id,
+                            name = 'vm2',
+                            image_ref=image_ref,
+                            network=network_uuid)
+
+  if reply.status_code != 202:
+    os._exit(1)
+
+  reply_content = json.loads(reply.content)
+  vm_uuid = reply_content['server']['id']
+  print "vm2 UUID " + vm_uuid
+
+
+
 
 
 if __name__ == '__main__':
