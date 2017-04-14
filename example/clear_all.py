@@ -23,7 +23,7 @@ def delete_all_vms(token, tenant_id):
       server = all_servers[i]
       print "delete VM UUID "+ server['id']
       conn.destroyServers(token, server['id'], tenant_id)
-
+  print "finished delete all VMs"
 
 def delete_all_network(token, tenant_id):
   print "delete all networks"
@@ -40,9 +40,53 @@ def delete_all_network(token, tenant_id):
         continue
 
     print "delete network UUID " + network['id'] + ", name=" + network['name']
-    conn.destroyNetwork(token, network['id'])
+    reply = conn.destroyNetwork(token, network['id'])
 
+    if reply.status_code != 204:
+      print "line 65 exist status code %d"%reply.status_code      
+      os._exit(1)
+      
+  print "finished delete all networks"
 
+def delete_all_routers(token, tenant_id):
+  print "delete all routers"
+  reply = conn.listRouters(token)
+  if reply.status_code != 200:
+      os._exit(1)  
+
+  reply_content = json.loads(reply.content)     
+  all_routers=reply_content['routers']  
+
+  for i in range(len(all_routers)):
+    router = all_routers[i]
+    if router['tenant_id'] not in tenant_id:
+        continue
+    
+    print "deletea all router interfaces"
+    reply = conn.listPorts(token)
+    if reply.status_code != 200:    
+      print "list port fail, exist status code %d"%reply.status_code      
+      os._exit(1)
+    reply_content = json.loads(reply.content)
+    all_ports = reply_content['ports']
+
+    for i in range(len(all_ports)):
+      port = all_ports[i]
+
+      if  'network' in port['device_owner']:
+          reply = conn.delRouterInterface(token, router['id'], port_uuid=port['id'])
+          if reply.status_code != 200:    
+            print "delete port fail, exist status code %d"%reply.status_code      
+            os._exit(1)
+
+    print "delete router UUID " + router['id'] + ", name=" + router['name']
+    reply = conn.destroyRouter(token, router['id'])
+
+    if reply.status_code != 204:
+      print "delete router fail, exist status code %d"%reply.status_code      
+      os._exit(1)
+
+  print "finished delete all routers"
 
 
 
@@ -92,6 +136,7 @@ if __name__ == '__main__':
     print "token " + token
 
     delete_all_vms(token, tenant['id'])
+    delete_all_routers(token, tenant['id'])
     delete_all_network(token, tenant['id'])
 
     if tenant['name'] == 'admin':

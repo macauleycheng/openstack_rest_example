@@ -31,13 +31,15 @@ if __name__ == '__main__':
   token = reply_content['access']['token']['id']
   print "token = "+token
 
-  admin_User_ID_Admin = tools.getUserId(conn, token, 'admin')
-  if admin_User_ID_Admin != None:
-  	User_ID_Admin = admin_User_ID_Admin
+  if User_ID_Admin == '':
+    admin_User_ID_Admin = tools.getUserId(conn, token, 'admin')
+    if admin_User_ID_Admin != None:
+  	  User_ID_Admin = admin_User_ID_Admin
 
-  role_admin_id = tools.getRoleId(conn, token, 'admin')
-  if role_admin_id != None:
-  	Role_Admin = role_admin_id
+  if Role_Admin == '':
+    role_admin_id = tools.getRoleId(conn, token, 'admin')
+    if role_admin_id != None:
+  	  Role_Admin = role_admin_id
   
 
   for i in range(Total_Tenant):
