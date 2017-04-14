@@ -56,11 +56,11 @@ if __name__ == '__main__':
   if reply.status_code!=200:
     os._exit(1)
 
-  token = reply_content['access']['token']['id']
-  print "token = "+token
+  admin_token = reply_content['access']['token']['id']
+  print "token = "+admin_token
 
   print "list tenants"
-  reply = conn.listTenant(token)
+  reply = conn.listTenant(admin_token)
   reply_content = json.loads(reply.content)
   #print reply_content
 
@@ -68,17 +68,39 @@ if __name__ == '__main__':
   all_tenants=reply_content['tenants']
   #print all_tenants
   print "Total Tenants "+ str(len(all_tenants))
-
+  #print all_tenants
   for i in range(len(all_tenants)):
     tenant=all_tenants[i]
     if tenant['name'] == 'services':
       continue
+
     print "tenant id  "+ tenant['id']
+
     reply = conn.getToken(tenant_uuid=tenant['id'])
     reply_content = json.loads(reply.content)
     if reply.status_code != 200:
+      print "get token fail, status code %d"%reply.status_code   
+      print "destroy tenant=" + tenant['id'] + ", name="+tenant['name']
+      reply = conn.destroyTenant(admin_token, tenant['id'])
+      if reply.status_code != 204:
+          print "Delete tenant fail, status code %d"%reply.status_code
+      else:
+        continue
       os._exit(1)
+
     token = reply_content['access']['token']['id']
     print "token " + token
+
     delete_all_vms(token, tenant['id'])
     delete_all_network(token, tenant['id'])
+
+    if tenant['name'] == 'admin':
+        continue
+
+    print "destroy tenant=" + tenant['id'] + ", name="+tenant['name']
+    reply = conn.destroyTenant(admin_token, tenant['id'])
+    if reply.status_code != 204:
+      print "Delete tenant fail, status code %d"%reply.status_code      
+      os._exit(1)    
+
+    print "Next.........."

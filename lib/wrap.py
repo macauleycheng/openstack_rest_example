@@ -42,14 +42,76 @@ class wrap():
 
         return r
 
+    #normal response is 200
+    def createTenant(self, token, name, description="", enabled=True):
+        obj = {
+               "tenant": {
+                          "name": name,
+                          "description": description,
+                          "enabled": enabled
+                         }
+        }      
 
+        headers['X-Auth-Token']=token
+        reqUrl =  self.keystone + 'v2.0/tenants'
+        r = requests.post(reqUrl, data=json.dumps(obj),headers=headers, timeout=self.timeout)
+        
+        return r
 
-    def listTenant(self, token, tenantName="admin"):
+    #normal response is 204
+    def destroyTenant(self, token, project_uuid):
+
+        headers['X-Auth-Token']=token
+        reqUrl =  self.keystone + 'v2.0/tenants/'+ project_uuid
+        r = requests.delete(reqUrl,headers=headers, timeout=self.timeout)
+        
+        return r 
+
+    def addTenantUser(self, token, project_uuid, user_uuid, role_uuid):
+        headers['X-Auth-Token']=token
+        reqUrl =  self.keystone + 'v2.0/tenants/'+ project_uuid+"/users/"+user_uuid+'/roles/OS-KSADM/'+role_uuid
+        r = requests.put(reqUrl,headers=headers, timeout=self.timeout)
+
+        return r
+
+    def listTenant(self, token):
         headers['X-Auth-Token']=token
         reqUrl =  self.keystone + 'v2.0/tenants'
         r = requests.get(reqUrl, headers=headers, timeout=self.timeout)
 
         return r
+
+    #Normal response codes: 201
+    def createUser(self, token, project_uuid, user_name='demo', password="password", email="new-user@example.com"):
+        obj={
+                "user": {
+                    "email": email,
+                    "password": password,
+                    "enabled": True,
+                    "name": user_name,
+                    "tenantId": project_uuid
+                }
+            }
+        
+        r = requests.post(reqUrl, data=json.dumps(obj), headers=headers, timeout=self.timeout)
+
+        return r
+
+    def listUsers(self, token):
+        headers['X-Auth-Token']=token
+        reqUrl =  self.keystone + 'v2.0/users'
+        r = requests.get(reqUrl, headers=headers, timeout=self.timeout)
+
+        return r      
+
+    def listRoles(self, token):
+        headers['X-Auth-Token']=token
+        reqUrl =  self.keystone + 'v2.0/OS-KSADM/roles'
+
+        r = requests.get(reqUrl, headers=headers, timeout=self.timeout)
+
+        return r      
+
 
     #https://developer.openstack.org/api-ref/networking/v2/index.html?expanded=create-network-detail,create-segment-detail,create-subnet-detail#networks
     def createNetwork(self, token, project_uuid, name, spec=None):
@@ -70,6 +132,21 @@ class wrap():
         else:
             r = requests.post(reqUrl, data=json.dumps(spec), headers=headers, timeout=self.timeout)
 
+        return r
+
+    def destroyNetwork(self, token, network_uuid):
+        reqUrl =  self.networks+ 'v2.0/networks/'+network_uuid
+        headers['X-Auth-Token']=token
+
+        r = requests.delete(reqUrl, headers=headers, timeout=self.timeout)
+
+        return r        
+
+    def listNetworks(self, token):
+        reqUrl =  self.networks+ 'v2.0/networks'
+        headers['X-Auth-Token']=token
+
+        r = requests.get(reqUrl, headers=headers, timeout=self.timeout)
         return r
 
     def createSubnet(self, token, project_uuid, network_uuid, version, cidr, spec=None):
@@ -105,7 +182,7 @@ class wrap():
              }
         headers['X-Auth-Token']=token
         reqUrl =  self.nova + project_uuid + '/servers'
-        print reqUrl
+
         if spec is None:
             r = requests.post(reqUrl, data=json.dumps(obj), headers=headers, timeout=self.timeout)
         else:
@@ -114,3 +191,17 @@ class wrap():
         return r
 
 
+    def destroyServers(self, token, server_uuid, project_uuid):
+        headers['X-Auth-Token']=token
+        reqUrl =  self.nova + project_uuid + '/servers/'+ server_uuid        
+
+        r = requests.delete(reqUrl, headers=headers, timeout=self.timeout)
+
+        return r
+
+    def listServers(self, token, project_uuid):
+        reqUrl =  self.nova + project_uuid + '/servers'
+        headers['X-Auth-Token']=token
+
+        r = requests.get(reqUrl, headers=headers, timeout=self.timeout)
+        return r        
