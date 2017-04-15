@@ -8,6 +8,7 @@ import simplejson as json
 
 sys.path.append(os.path.abspath('../'))
 from lib import wrap
+from lib import tools
 
 def delete_all_vms(token, tenant_id):
   print "delete all VMs"

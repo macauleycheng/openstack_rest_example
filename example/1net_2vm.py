@@ -8,6 +8,7 @@ import simplejson as json
 
 sys.path.append(os.path.abspath('../'))
 from lib import wrap
+from lib import tools
 
 #user shall change this according to his openstack
 image_ref = 'bb9429e5-448b-478a-bf7d-b577bf2b195b'
