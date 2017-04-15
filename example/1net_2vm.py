@@ -66,7 +66,12 @@ def patch_work(token, tenant_id):
 
 
 if __name__ == '__main__':
-  conn = wrap('192.168.200.91')
+  ip_addr = raw_input("Input target Ip address? ")
+  if tools.validateIPaddr(str(ip_addr) == False):
+    print "Fail to connect to target IP"
+    os_exit(1)
+
+  conn = wrap(ip_addr)
   print "get token"
   reply = conn.getToken()
   reply_content = json.loads(reply.content)

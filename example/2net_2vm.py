@@ -8,6 +8,7 @@ import simplejson as json
 
 sys.path.append(os.path.abspath('../'))
 from lib import wrap
+from lib import tools
 
 #user shall change this according to his openstack
 image_ref = 'bb9429e5-448b-478a-bf7d-b577bf2b195b'
@@ -101,7 +102,12 @@ def patch_work(token, tenant_id):
 
 
 if __name__ == '__main__':
-  conn = wrap('192.168.200.91')
+  ip_addr = raw_input("Input target Ip address? ")
+  if tools.validateIPaddr(str(ip_addr) == False):
+    print "Fail to connect to target IP"
+    os_exit(1)
+
+  conn = wrap(ip_addr)
   print "get token"
   reply = conn.getToken()
   reply_content = json.loads(reply.content)
