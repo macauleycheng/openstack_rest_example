@@ -16,6 +16,7 @@ class wrap():
         self.nova = 'http://%s:%s/v2/'%(ip, str(8774))
 
     def getToken(self, tenant_uuid=None, tenant_name="admin", user_name="admin", password="admin"):
+
         if tenant_uuid == None:
             obj = {
                   "auth":{
@@ -111,14 +112,109 @@ class wrap():
         r = requests.get(reqUrl, headers=headers, timeout=self.timeout)
 
         return r      
+    #Normal response codes: 201
+    def createRouter(self, token, project_uuid, name="r1", ext_net_uuid=None, ext_ip='', ext_subnet_uuid=''):
+        if ext_net_uuid == None:
+          obj = {
+                "router": {
+                    "name": name,
+                    "tenant_id": project_uuid,
+                    #"project_id": project_uuid,
+                    "admin_state_up": True
+                          }
+                }
+        else:
+          obj = {
+                "router": {
+                    "name": name,
+                    "tenant_id": project_uuid,
+                    #"project_id": project_uuid,                    
+                    "external_gateway_info": {
+                        "network_id": ext_net_uuid,
+                        "enable_snat": True,
+                        "external_fixed_ips": [
+                            {
+                                "ip_address": ext_ip,
+                                "subnet_id": ext_subnet_uuid
+                            }
+                        ]
+                    },
+                    "admin_state_up": True
+                }
+            }            
+        reqUrl =  self.networks+ 'v2.0/routers'
+        headers['X-Auth-Token']=token
+
+        r = requests.post(reqUrl, data=json.dumps(obj), headers=headers, timeout=self.timeout)
+        return r
+
+    #Normal response codes: 204
+    def destroyRouter(self, token, r_uuid):
+        reqUrl =  self.networks+ 'v2.0/routers/'+r_uuid
+        headers['X-Auth-Token']=token
+
+        r = requests.delete(reqUrl, headers=headers, timeout=self.timeout)
+        return r      
+
+    #Normal response codes: 200
+    def addRouterInterface(self, token, r_uuid, subnet_uuid=None, port_uuid=None):
+        if subnet_uuid != None:
+          obj = {
+                "subnet_id": subnet_uuid
+                }
+        else:
+          obj ={
+                "port_id": port_uuid
+               }
+
+        reqUrl =  self.networks+ 'v2.0/routers/'+r_uuid+"/add_router_interface"
+        headers['X-Auth-Token']=token
+
+        r = requests.put(reqUrl, data=json.dumps(obj), headers=headers, timeout=self.timeout)
+        return r
+
+    #Normal response codes: 200
+    def delRouterInterface(self, token, r_uuid, subnet_uuid=None, port_uuid=None):
+        if subnet_uuid != None:
+          obj = {
+                "subnet_id": subnet_uuid
+                }
+        else:
+          obj ={
+                "port_id": port_uuid
+               }
+
+        reqUrl =  self.networks+ 'v2.0/routers/'+r_uuid+"/remove_router_interface"
+        headers['X-Auth-Token']=token
+        print obj
+        r = requests.put(reqUrl, data=json.dumps(obj), headers=headers, timeout=self.timeout)
+        return r
+
+    def listRouters(self, token):
+        reqUrl =  self.networks+ 'v2.0/routers'
+        headers['X-Auth-Token']=token
+
+        r = requests.get(reqUrl, headers=headers, timeout=self.timeout)
+        return r
+
+    def listPorts(self, token, filter=None):
+        if filter == None:
+          reqUrl =  self.networks+ 'v2.0/ports'
+        else:
+          reqUrl = self.networks + 'v2.0/ports?'+filter
+
+        headers['X-Auth-Token']=token
+
+        r = requests.get(reqUrl, headers=headers, timeout=self.timeout)
+        return r        
 
 
     #https://developer.openstack.org/api-ref/networking/v2/index.html?expanded=create-network-detail,create-segment-detail,create-subnet-detail#networks
     def createNetwork(self, token, project_uuid, name, spec=None):
         obj = { 
               "network": {
-                         "project_id": project_uuid,
                          "tenant_id": project_uuid,
+                         #"project_id": project_uuid,                         
                          "name": name,
                          "admin_state_up": True
                          }
@@ -152,7 +248,7 @@ class wrap():
     def createSubnet(self, token, project_uuid, network_uuid, version, cidr, spec=None):
         obj = {
               "subnet": {
-                         "project_id": project_uuid,
+                         #"project_id": project_uuid,
                          "tenant_id": project_uuid,
                          "network_id": network_uuid,
                          "ip_version": version,

@@ -11,7 +11,8 @@ from lib import wrap
 from lib import tools
 
 #user shall change this according to his openstack
-image_ref = 'bb9429e5-448b-478a-bf7d-b577bf2b195b'
+image_ref = '9f7ccc89-dca0-464c-bf4c-c930a17d7cb3'
+
 
 def patch_work(token, tenant_id):
   print "create network1"
@@ -106,6 +107,8 @@ if __name__ == '__main__':
   if tools.validateIPaddr(str(ip_addr) == False):
     print "Fail to connect to target IP"
     os_exit(1)
+  if image_ref == None:
+     image_ref = raw_input("Inpute image UUID? ")     
 
   conn = wrap(ip_addr)
   print "get token"

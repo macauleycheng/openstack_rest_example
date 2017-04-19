@@ -1,4 +1,5 @@
 import json
+import socket
 
 def getUserId(conn, token, who='admin'):
   reply = conn.listUsers(token)
@@ -31,3 +32,9 @@ def getRoleId(conn, token, who = 'admin'):
       if role['name'] in who:
         return role['id']
 
+def validateIPaddr(add):
+  try:
+    socket.inet_aton(addr)
+    return True
+  except:
+    return False
